@@ -51,7 +51,7 @@ const onLoad = (object: any) => {
   let animations: any = null;
 
   //load skin
-  textureLoader.loadAsync(`.${folderPath}/player${playerIndex + 1}.png`).then((texture) => {
+  textureLoader.loadAsync(`player${playerIndex + 1}.png`).then((texture) => {
     const material = new MeshBasicMaterial({
       map: texture,
     });
