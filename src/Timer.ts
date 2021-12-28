@@ -2,7 +2,7 @@ import { ref } from 'vue'
 
 const setupTimer = () => {
     const runningTimer = ref(0);
-    const duration = ref(1000);
+    const duration = ref(350);
     let lastTime: number | null = null
 
     const isTimeUp = (timeNow: number) => {
@@ -12,7 +12,8 @@ const setupTimer = () => {
             runningTimer.value -= delta
             return false
         } else {
-            //reset
+            //gradually increase drop speed
+            duration.value -= 0.5
             runningTimer.value = duration.value;
             return true
         }

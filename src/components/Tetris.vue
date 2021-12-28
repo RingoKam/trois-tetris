@@ -1,7 +1,7 @@
 <template>
   <Group ref="tetris">
     <!-- board -->
-    <Box v-for="pos in boardGrid" :key="pos.x + 'b' + pos.y" :position="pos">
+    <Box v-for="pos in boardGrid" :key="pos.x + 'b' + playerIndex + pos.y" :position="pos">
       <LambertMaterial :props="{ wireframe: false }" />
     </Box>
     <Box :position="{ x: 5, y: 10 }" :scale="{ y: 23 }">
@@ -13,13 +13,13 @@
     <!-- player pieces -->
     <Box
       v-for="pos in playerBlocksPos"
-      :key="pos.x + 'p' + pos.y"
+      :key="pos.x + 'p' + playerIndex + pos.y"
       :position="pos"
     >
       <LambertMaterial :props="{ color: 'red' }" />
     </Box>
     <!-- frozen piece-->
-    <Box v-for="pos in frozenBlocks" :key="pos.x + 'f' + pos.y" :position="pos">
+    <Box v-for="pos in frozenBlocks" :key="pos.x + 'f' + playerIndex + pos.y" :position="pos">
       <LambertMaterial :props="{ wireframe: true }" />
     </Box>
   </Group>
@@ -34,8 +34,6 @@ import {
   RendererInjectionKey,
   RendererPublicInterface,
 } from "troisjs";
-import { Block, init } from "../PlayerBlock";
-import { setupTimer } from "../Timer";
 import {
   inject,
   onMounted,
@@ -46,8 +44,11 @@ import {
   defineProps,
 } from "vue";
 import { set } from "lodash";
+import { Block, init } from "../PlayerBlock";
+import { setupTimer } from "../Timer";
+import { controlScheme } from '../PlayerProfile'
 
-const props = defineProps<{
+const { playerIndex } = defineProps<{
   playerIndex: number;
 }>();
 
@@ -64,7 +65,7 @@ const tetris = ref();
 const handleInput = (keyboard: KeyboardEvent) => {
   console.log(keyboard.key);
   switch (keyboard.key) {
-    case "a":
+    case controlScheme[playerIndex].left:
       //detect wall collision
       if (playerBlocksPos.value.findIndex((b) => b.x < -4) !== -1) break;
       //detect block collision
@@ -79,7 +80,7 @@ const handleInput = (keyboard: KeyboardEvent) => {
       //if() break;
       playerBlocksOffset.x -= 1;
       break;
-    case "d":
+    case controlScheme[playerIndex].right:
       //detect wall collision
       if (playerBlocksPos.value.findIndex((p) => p.x > 3) !== -1) break;
       //detect block collision
@@ -91,11 +92,10 @@ const handleInput = (keyboard: KeyboardEvent) => {
         break;
       playerBlocksOffset.x += 1;
       break;
-    case "s":
+    case controlScheme[playerIndex].speed:
       moveDown();
       break;
-    case "w":
-    case " ":
+    case controlScheme[playerIndex].rotate:
       rotateBlock();
       break;
   }

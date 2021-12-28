@@ -2,6 +2,14 @@
   <div class="end-game">
     <h1>Gameover...</h1>
     <div class="menu">
+      <div class="nes-table-responsive spacing">
+        <tbody>
+          <tr v-for="(player, i) in players" :key="i">
+            <td>player_{{i + 1}}: </td>
+            <td>{{ player }}</td>
+          </tr>
+        </tbody>
+      </div>
       <button
         type="button"
         class="nes-btn is-error spacing"
@@ -14,6 +22,12 @@
 </template>
 
 <script lang="ts" setup>
+import { defineEmits, defineProps } from "vue";
+
+const props = defineProps<{
+  players: Array<number>;
+}>();
+
 const emit = defineEmits<{
   (e: "backToMenu"): void;
 }>();
