@@ -8,3 +8,5 @@ This template should help get you started developing with Vue 3 and Typescript i
 
 
 ## Resources/References
+- Rotation algo/formula
+https://stackoverflow.com/questions/42519/how-do-you-rotate-a-two-dimensional-array/8664879#8664879

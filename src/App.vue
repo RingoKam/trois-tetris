@@ -3,26 +3,22 @@
     <Camera :position="{ z: 10 }" />
     <Scene>
       <PointLight :position="{ y: 50, z: 50 }" />
-      <Box :size="1" ref="meshC" :rotation="{ y: Math.PI / 4, z: Math.PI / 4 }">
-        <LambertMaterial />
-      </Box>
+      <HemisphereLight />
+      <Tetris/>
     </Scene>
   </Renderer>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { Box, Camera, LambertMaterial, MeshPublicInterface, PointLight, Renderer, RendererPublicInterface, Scene } from 'troisjs'
+import { MeshPublicInterface, Camera, PointLight, Renderer, HemisphereLight, RendererPublicInterface, Scene } from 'troisjs'
+import Tetris from './components/Tetris.vue'
 
 const rendererC = ref<RendererPublicInterface>()
-const meshC = ref<MeshPublicInterface>()
+const sceneC = ref();
 
 onMounted(() => {
   const renderer = rendererC.value;
-  const mesh = meshC.value.mesh
-  renderer.onBeforeRender(() => {
-    mesh!.rotation.x += 0.01
-  })
 })
 </script>
 
