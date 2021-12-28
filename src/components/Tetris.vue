@@ -36,20 +36,32 @@ import {
 } from "troisjs";
 import { Block, init } from "../PlayerBlock";
 import { setupTimer } from "../Timer";
-import { inject, onMounted, reactive, ref, computed } from "vue";
+import {
+  inject,
+  onMounted,
+  reactive,
+  ref,
+  computed,
+  defineEmits,
+  defineProps,
+} from "vue";
 import { set } from "lodash";
+
+const props = defineProps<{
+  playerIndex: number;
+}>();
+
+const emits = defineEmits<{
+  (e: "gameover"): void;
+  (e: "score", points: number): void;
+}>();
 
 const renderer = inject<RendererPublicInterface>(
   RendererInjectionKey as symbol
 );
 const tetris = ref();
 
-onMounted(() => {
-  //TODO: use
-  window.addEventListener("keydown", handleKeyboardEvent);
-});
-
-const handleKeyboardEvent = (keyboard: KeyboardEvent) => {
+const handleInput = (keyboard: KeyboardEvent) => {
   console.log(keyboard.key);
   switch (keyboard.key) {
     case "a":
@@ -175,7 +187,7 @@ const clearBlocks = () => {
     .filter(([y, xs]) => Object.keys(<any>xs).length === 10)
     .map(([y]) => parseInt(y));
   if (rowsToClear.length > 0) {
-      //rows to modify should have the row# and the number of row it has to be decrase by
+    //rows to modify should have the row# and the number of row it has to be decrase by
     const rowsToModify = rows
       .filter(([y]) => !rowsToClear.includes(parseInt(y))) // rows that are not include in rows to clear
       .reduce<{ [key: string]: number }>((acc, [y]) => {
@@ -185,28 +197,30 @@ const clearBlocks = () => {
         acc[y] = removeRows;
         return acc;
       }, {});
-    debugger;
     frozenBlocks.value = frozenBlocks.value
       .filter(({ y }) => !rowsToClear.includes(y))
       .map(({ x, y, z }) => {
-          const newY = y - (rowsToModify?.[y] ?? 0);
-          debugger;
         return {
           x,
-          y: newY,
+          y: y - (rowsToModify?.[y] ?? 0),
           z,
         };
       });
+    emits("score", rowsToClear.length * 10);
   }
 };
 
 onMounted(() => {
+  window.addEventListener("keydown", handleInput)
+  let gameover = false; // can't unsub from the onbefore render callback?
   renderer?.onBeforeRender(({ time }) => {
-    //define game logic here
-
+    if(gameover) return; //hack to get around can't unsub
     //check if game is over
-    if (isGameOver()) return;
-
+    if (isGameOver()) {
+      gameover = true;
+      emits("gameover")
+      return;
+    }
     if (isTimeUp(time)) {
       moveDown();
     }
