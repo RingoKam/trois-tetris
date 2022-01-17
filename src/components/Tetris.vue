@@ -1,7 +1,11 @@
 <template>
   <Group ref="tetris">
     <!-- board -->
-    <Box v-for="pos in boardGrid" :key="pos.x + 'b' + playerIndex + pos.y" :position="pos">
+    <Box
+      v-for="pos in boardGrid"
+      :key="pos.x + 'b' + playerIndex + pos.y"
+      :position="pos"
+    >
       <LambertMaterial :props="{ wireframe: false }" />
     </Box>
     <Box :position="{ x: 5, y: 10 }" :scale="{ y: 23 }">
@@ -19,7 +23,11 @@
       <LambertMaterial :props="{ color: 'red' }" />
     </Box>
     <!-- frozen piece-->
-    <Box v-for="pos in frozenBlocks" :key="pos.x + 'f' + playerIndex + pos.y" :position="pos">
+    <Box
+      v-for="pos in frozenBlocks"
+      :key="pos.x + 'f' + playerIndex + pos.y"
+      :position="pos"
+    >
       <LambertMaterial :props="{ wireframe: true }" />
     </Box>
   </Group>
@@ -43,10 +51,10 @@ import {
   defineEmits,
   defineProps,
 } from "vue";
-import { set } from "lodash";
+import { cloneDeep, set } from "lodash";
 import { Block, init } from "../PlayerBlock";
 import { setupTimer } from "../Timer";
-import { controlScheme } from '../PlayerProfile'
+import { controlScheme } from "../PlayerProfile";
 
 const { playerIndex } = defineProps<{
   playerIndex: number;
@@ -62,8 +70,16 @@ const renderer = inject<RendererPublicInterface>(
 );
 const tetris = ref();
 
+const isCollisionWithBoard = () =>
+  playerBlocksPos.value.findIndex((b) => b.x < -4) !== -1 ||
+  playerBlocksPos.value.findIndex((b) => b.x > 3) !== -1;
+
+const isCollisionWithFrozenBoard = () =>
+  playerBlocksPos.value.findIndex(
+    (b) => frozenBlocksDict.value?.[b.y]?.[b.x] === true
+  ) !== -1;
+
 const handleInput = (keyboard: KeyboardEvent) => {
-  console.log(keyboard.key);
   switch (keyboard.key) {
     case controlScheme[playerIndex].left:
       //detect wall collision
@@ -96,7 +112,32 @@ const handleInput = (keyboard: KeyboardEvent) => {
       moveDown();
       break;
     case controlScheme[playerIndex].rotate:
+      const originalOffset = cloneDeep(playerBlocksOffset);
       rotateBlock();
+      const offset = [1, -1, 0];
+      let tryCount = 0;
+
+      // check if block is colliding
+      // with board
+      // with frozenblocks
+      // if collided +1
+      // if still collide -1
+      // if still collide, there are no where to go, use the beg value
+      while (
+        (isCollisionWithBoard() || isCollisionWithFrozenBoard()) &&
+        tryCount < 3
+      ) {
+        const nextOffset = offset[tryCount];
+        playerBlocksOffset.x = originalOffset.x + nextOffset;
+        playerBlocksOffset.y = originalOffset.y;
+        playerBlocksOffset.z = originalOffset.z;
+
+        if (nextOffset === 0) {
+          //undo the rotation
+          rotateBlock(-1);
+        }
+        tryCount++
+      }
       break;
   }
 };
@@ -211,14 +252,15 @@ const clearBlocks = () => {
 };
 
 onMounted(() => {
-  window.addEventListener("keydown", handleInput)
+  window.addEventListener("keydown", handleInput);
   let gameover = false; // can't unsub from the onbefore render callback?
   renderer?.onBeforeRender(({ time }) => {
-    if(gameover) return; //hack to get around can't unsub
+    if (gameover) return; //hack to get around can't unsub
     //check if game is over
     if (isGameOver()) {
       gameover = true;
-      emits("gameover")
+      emits("gameover");
+      window.removeEventListener("keydown", handleInput);
       return;
     }
     if (isTimeUp(time)) {

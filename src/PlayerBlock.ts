@@ -101,7 +101,9 @@ export const init = () => {
         blockType.value = block ?? randomBlock()
         blockMatrix.value = newBlock(blockType.value);
     }
-    const rotateBlock = () => blockMatrix.value = rotate(blockMatrix.value, 1)
+    const rotateBlock = (r = 1) => {
+        blockMatrix.value = rotate(blockMatrix.value, r)
+    }
 
     return {
         //methods

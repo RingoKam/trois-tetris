@@ -1,7 +1,6 @@
 <template>
   <!-- UI overlay -->
   <div class="overlay">
-    <!-- {{ gameState }} -->
     <!-- 3 diff ui state start game -> on going -> game over -->
     <StartGame v-if="gameState === 'start'" @startGame="start($event)" />
     <OnGoing v-if="gameState === 'ongoing'" :players="players" />
@@ -11,8 +10,8 @@
       @backToMenu="toMenu()"
     />
   </div>
+  <!-- Trois Rendering -->
   <Renderer ref="rendererC" antialias resize="window">
-    <!-- TODO: position the camera base on the view angle avaliable -->
     <Camera :position="{ z: 10 }" />
     <Scene>
       <PointLight :position="{ y: 50, z: 50 }" />
@@ -39,9 +38,6 @@
         >
         </PlayerModel>
       </Group>
-
-      <!-- <Tetris :position="{x: -15}"/>
-      <Tetris :position="{x: 15}"/> -->
     </Scene>
   </Renderer>
 </template>
